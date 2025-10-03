@@ -22,9 +22,25 @@ set(IMGUI_SRC
         ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
 )
 
-# Cria executável incluindo main.cpp e ImGui
+# Fontes da engine
+set(ENGINE_SRC
+        src/Engine/Engine.cpp
+        src/Engine/Core/Window.cpp
+        src/Engine/Core/Logger.cpp
+        src/Engine/UI/ImGuiManager.cpp
+        src/Engine/Graphics/Mesh.cpp
+        src/Engine/Graphics/MeshManager.cpp
+        src/Engine/Math/Transform.cpp
+        src/Engine/Graphics/PrimitiveObjects/Triangle.cpp
+        src/Engine/Graphics/PrimitiveObjects/Rectangle.cpp
+        src/Engine/Graphics/PrimitiveObjects/Ellipse.cpp
+        examples/basic_triangle/TriangleExample.cpp
+)
+
+# Cria executável
 add_executable(BetoEngine
         src/main.cpp
+        ${ENGINE_SRC}
         ${IMGUI_SRC}
 )
 
@@ -35,6 +51,7 @@ target_include_directories(BetoEngine PRIVATE
         ${SDL2_INCLUDE_DIRS}
         ${GLEW_INCLUDE_DIRS}
         ${OPENGL_INCLUDE_DIR}
+        include
 )
 
 # Linka bibliotecas
@@ -43,3 +60,6 @@ target_link_libraries(BetoEngine
         ${GLEW_LIBRARIES}
         ${OPENGL_LIBRARIES}
 )
+
+# Define o loader do ImGui para GLEW
+add_definitions(-DIMGUI_IMPL_OPENGL_LOADER_GLEW)
