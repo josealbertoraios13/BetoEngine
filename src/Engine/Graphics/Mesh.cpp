@@ -9,6 +9,9 @@
 #include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <algorithm>
+#include <fstream>
+#include <sstream>
+#include <string>
 
 #include "../../../include/Engine/Graphics/MeshManager.h"
 #include "../../../include/Engine/Core/Window.h"
@@ -133,48 +136,55 @@ void Mesh::SetupMesh() {
 
 
 void Mesh::SetupShader() {
-    const char* vertexShaderSource = R"(
-                #version 330 core
-                layout(location = 0) in vec3 aPos; // Atributo de vértice (posição)
-                uniform mat4 model; // matriz de tranformação
-                uniform mat4 projection;
-                void main(){
-                    gl_Position = projection * model * vec4(aPos, 1.0);
-                }
-            )";
+    std::string vertexShaderSource = LoadShaderSource("../shaders/Mesh.vert");
+    const char* vertex = vertexShaderSource.c_str();
 
-    //Shader fragment: define cor fixa branca
-    const char* fragmentShaderSource = R"(
-                #version 330 core
-                out vec4 FragColor; // Cor de saída
-                uniform vec4 uColor;
-                void main(){
-                    FragColor = uColor; //Branco opaco
-                }
-            )";
+    //Get Shader fragment: define cor fixa branca
+    std::string fragmentShaderSource = LoadShaderSource("../shaders/Mesh.frag");
+    const char* fragment = fragmentShaderSource.c_str();
 
-    //Compila vertex shader
-    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, nullptr);
-    glCompileShader(vertexShader);
-    CheckCompileErrors(vertexShader, "VERTEX"); //Verifica Erros
+    shaderProgram = CreateShaderProgram(vertex, fragment);
 
-    // Compila fragment shader
-    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, nullptr);
-    glCompileShader(fragmentShader);
-    CheckCompileErrors(fragmentShader, "FRAGMENT"); // Veridica erros
+}
+
+std::string Mesh::LoadShaderSource(const std::string& path) {
+    std::ifstream file(path);
+
+    if (!file.is_open()) {
+        throw std::runtime_error("Could not open file " + path);
+    }
+
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    return buffer.str();
+}
+
+GLuint Mesh::CompileShaders(GLenum type, const char *source) {
+    GLuint shader = glCreateShader(type);
+    glShaderSource(shader, 1, &source, nullptr);
+    glCompileShader(shader);
+    CheckCompileErrors(shader, type == GL_VERTEX_SHADER ? "VERTEX" : "FRAGMENT");
+
+    return shader;
+}
+
+GLuint Mesh::CreateShaderProgram(const char *vertexShaderSource, const char *FragmentShadersource) const{
+    GLuint vertexShader = CompileShaders(GL_VERTEX_SHADER, vertexShaderSource);
+    GLuint fragmentShader = CompileShaders(GL_FRAGMENT_SHADER, FragmentShadersource);
 
     // Cria programa de shader e linka os shaders
-    shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-    CheckCompileErrors(shaderProgram, "PROGRAM"); // Verifica erros de linking
+    GLuint program = glCreateProgram();
+    glAttachShader(program, vertexShader);
+    glAttachShader(program, fragmentShader);
+
+    glLinkProgram(program);
+    CheckCompileErrors(program, "PROGRAM"); // Verifica erros de linking
 
     // Limpa shaders intermédiarios (já linkados no programa)
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
+
+    return program;
 }
 
 //Private

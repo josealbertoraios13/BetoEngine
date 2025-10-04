@@ -45,6 +45,9 @@ class Mesh {
 
         void SetupMesh();
         void SetupShader();
+        GLuint CreateShaderProgram(const char *vertexShaderSource, const char *FragmentShadersource) const;
+
+        static GLuint CompileShaders(GLenum type, const char* source);
 
         std::vector<float> m_verts;
         std::string m_name;
@@ -59,6 +62,8 @@ class Mesh {
         void UpdateWorldMatrix();
 
         static void CheckCompileErrors(GLuint shader, const std::string& type);
+
+        static std::string LoadShaderSource(const std::string& path);
 };
 
 #endif //BETOENGINE_MESH_H

@@ -7,10 +7,8 @@ int main(int argc, char* argv[]) {
      *engine.GetWindow().SetWindowSize(1280, 720);
      *engine.Run();*/
 
-    /*Triangle Example
-     *TriangleExample example;
-     *BetoEngine::Window::SetWindowSize(1280, 720);
-     *example.Run();
-     *
-     */
+    TriangleExample example;
+    BetoEngine::Window::SetWindowSize(1280, 720);
+    example.Run();
+
 }
